@@ -5,8 +5,8 @@ import torch
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-from shutil import copyfile
+import matplotlib.pyplot as plt  # noqa: E402
+from shutil import copyfile  # noqa: E402
 
 
 def get_proper_cuda_device(device, verbose=True):
@@ -19,7 +19,7 @@ def get_proper_cuda_device(device, verbose=True):
         d = device[i]
         did = None
         if isinstance(d, str):
-            if re.search("cuda:[\d]+", d):
+            if re.search("cuda:[\d]+", d):  # noqa: W605
                 did = int(d[5:])
         elif isinstance(d, int):
             did = d
@@ -40,8 +40,8 @@ def get_proper_device(devices, verbose=True):
     devices = copy.copy(devices)
     if not isinstance(devices, list):
         devices = [devices]
-    use_cpu = any([d.find("cpu")>=0 for d in devices])
-    use_gpu = any([(d.find("cuda")>=0 or isinstance(d, int)) for d in devices])
+    use_cpu = any([d.find("cpu") >= 0 for d in devices])
+    use_gpu = any([(d.find("cuda") >= 0 or isinstance(d, int)) for d in devices])
     assert not (use_cpu and use_gpu), "{} contains cpu and cuda device.".format(devices)
     if use_gpu:
         devices = get_proper_cuda_device(devices, verbose)
@@ -81,7 +81,7 @@ def save(global_step, graph, optim, criterion_dict=None, pkg_dir="", is_best=Fal
     if max_checkpoints is not None:
         history = []
         for file_name in os.listdir(pkg_dir):
-            if re.search("save_\d*k\d*\.pkg", file_name):
+            if re.search("save_\d*k\d*\.pkg", file_name):  # noqa
                 digits = file_name.replace("save_", "").replace(".pkg", "").split("k")
                 number = int(digits[0]) * 1000 + int(digits[1])
                 history.append(number)
@@ -203,7 +203,7 @@ def plot_prob(done, title="", file_name=None, plot_dir=None):
     figsize = (5, 5 * len(done))
     fig, axes = __get_figures(len(done), figsize)
     for ax, d, t in zip(axes, done, title):
-        im = ax.imshow(d, vmin=0, vmax=1, cmap="Blues", aspect=d.shape[1]/d.shape[0])
+        ax.imshow(d, vmin=0, vmax=1, cmap="Blues", aspect=d.shape[1]/d.shape[0])
         ax.set_title(t)
         ax.set_yticks(np.arange(d.shape[0]))
         lables = ["Frame{}".format(i+1) for i in range(d.shape[0])]

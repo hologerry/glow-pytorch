@@ -1,11 +1,10 @@
-import re, os
-import copy
+import os
 import torch
 from collections import defaultdict
 from . import learning_rate_schedule
 from .config import JsonConfig
 from .models import Glow
-from .utils import load, save, get_proper_device
+from .utils import load, get_proper_device
 
 
 def build_adam(params, args):
@@ -21,9 +20,10 @@ def build(hparams, is_training):
     if isinstance(hparams, str):
         hparams = JsonConfig(hparams)
     # get graph and criterions from build function
-    graph, optim, lrschedule, criterion_dict = None, None, None, None  # init with None
+    graph, optim, lrschedule, = None, None, None  # init with None
+    # criterion_dict = None
     cpu, devices = "cpu", None
-    get_loss = None
+    # get_loss = None
     # 1. build graph and criterion_dict, (on cpu)
     # build and append `device attr` to graph
     graph = Glow(hparams)
@@ -67,9 +67,9 @@ def build(hparams, is_training):
             pre_trained = hparams.Infer.pre_trained
         if pre_trained is not None:
             loaded_step = load(os.path.basename(pre_trained),
-                        graph=graph, optim=optim, criterion_dict=None,
-                        pkg_dir=os.path.dirname(pre_trained),
-                        device=cpu)
+                               graph=graph, optim=optim, criterion_dict=None,
+                               pkg_dir=os.path.dirname(pre_trained),
+                               device=cpu)
         # 2. move graph to device (to cpu or cuda)
         use_cpu = any([isinstance(d, str) and d.find("cpu") >= 0 for d in devices])
         if use_cpu:

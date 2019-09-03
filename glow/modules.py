@@ -210,7 +210,7 @@ class InvertibleConv1x1(nn.Module):
 
             self.register_buffer('p', torch.Tensor(np_p.astype(np.float32)))
             self.register_buffer('sign_s', torch.Tensor(np_sign_s.astype(np.float32)))
-            self.l = nn.Parameter(torch.Tensor(np_l.astype(np.float32)))
+            self.l = nn.Parameter(torch.Tensor(np_l.astype(np.float32)))   # noqa: E741
             self.log_s = nn.Parameter(torch.Tensor(np_log_s.astype(np.float32)))
             self.u = nn.Parameter(torch.Tensor(np_u.astype(np.float32)))
             self.l_mask = torch.Tensor(l_mask)
@@ -234,13 +234,13 @@ class InvertibleConv1x1(nn.Module):
             self.sign_s = self.sign_s.to(input.device)
             self.l_mask = self.l_mask.to(input.device)
             self.eye = self.eye.to(input.device)
-            l = self.l * self.l_mask + self.eye
+            l = self.l * self.l_mask + self.eye  # noqa: E741
             u = self.u * self.l_mask.transpose(0, 1).contiguous() + torch.diag(self.sign_s * torch.exp(self.log_s))
             dlogdet = thops.sum(self.log_s) * thops.pixels(input)
             if not reverse:
                 w = torch.matmul(self.p, torch.matmul(l, u))
             else:
-                l = torch.inverse(l.double()).float()
+                l = torch.inverse(l.double()).float()  # noqa: E741
                 u = torch.inverse(u.double()).float()
                 w = torch.matmul(u, torch.matmul(l, self.p.inverse()))
             return w.view(w_shape[0], w_shape[1], 1, 1), dlogdet

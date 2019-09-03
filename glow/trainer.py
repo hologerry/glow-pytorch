@@ -1,13 +1,11 @@
-import re
 import os
 import torch
 import torch.nn.functional as F
 import datetime
-import numpy as np
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
 from torch.utils.data import DataLoader
-from .utils import save, load, plot_prob
+from .utils import save, plot_prob
 from .config import JsonConfig
 from .models import Glow
 from . import thops
@@ -49,7 +47,7 @@ class Trainer(object):
         self.batch_size = hparams.Train.batch_size
         self.data_loader = DataLoader(dataset,
                                       batch_size=self.batch_size,
-                                    #   num_workers=8,
+                                      num_workers=8,
                                       shuffle=True,
                                       drop_last=True)
         self.n_epoches = (hparams.Train.num_batches+len(self.data_loader)-1)
@@ -160,9 +158,12 @@ class Trainer(object):
                                                   self.y_classes)
                         y_true = y_onehot
                     for bi in range(min([len(img), 4])):
-                        self.writer.add_image("0_reverse/{}".format(bi), torch.cat((img[bi], batch["x"][bi]), dim=1), self.global_step)
+                        self.writer.add_image("0_reverse/{}".format(bi),
+                                              torch.cat((img[bi], batch["x"][bi]), dim=1), self.global_step)
                         if self.y_condition:
-                            self.writer.add_image("1_prob/{}".format(bi), plot_prob([y_pred[bi], y_true[bi]], ["pred", "true"]), self.global_step)
+                            self.writer.add_image("1_prob/{}".format(bi),
+                                                  plot_prob([y_pred[bi], y_true[bi]], ["pred", "true"]),
+                                                  self.global_step)
 
                 # inference
                 if hasattr(self, "inference_gap"):

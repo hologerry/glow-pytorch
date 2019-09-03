@@ -9,6 +9,7 @@ from torchvision import transforms
 IMAGE_EXTENSTOINS = [".png", ".jpg", ".jpeg", ".bmp"]
 ATTR_ANNO = "list_attr_celeba.txt"
 
+
 def _is_image(fname):
     _, ext = os.path.splitext(fname)
     return ext.lower() in IMAGE_EXTENSTOINS
@@ -37,7 +38,7 @@ def _find_images_and_annotation(root_dir):
         for i_line, line in enumerate(fin):
             line = line.strip()
             if i_line == 0:
-                image_total = int(line)
+                image_total = int(line)  # noqa
             elif i_line == 1:
                 attrs = line.split(" ")
             else:
@@ -70,7 +71,7 @@ class CelebADataset(Dataset):
         data = self.data[index]
         path = data["path"]
         attr = data["attr"]
-        image= Image.open(path).convert("RGB")
+        image = Image.open(path).convert("RGB")
         if self.transform is not None:
             image = self.transform(image)
         return {
