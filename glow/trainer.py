@@ -47,7 +47,7 @@ class Trainer(object):
         self.batch_size = hparams.Train.batch_size
         self.data_loader = DataLoader(dataset,
                                       batch_size=self.batch_size,
-                                      num_workers=8,
+                                      num_workers=32,
                                       shuffle=True,
                                       drop_last=True)
         self.n_epoches = (hparams.Train.num_batches+len(self.data_loader)-1)
