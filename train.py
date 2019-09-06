@@ -4,7 +4,7 @@ Usage:
     train.py <hparams> <dataset> <dataset_root>
 """
 import os
-import vision
+import data
 from docopt import docopt
 from torchvision import transforms
 from glow.builder import build
@@ -17,14 +17,14 @@ if __name__ == "__main__":
     hparams = args["<hparams>"]
     dataset = args["<dataset>"]
     dataset_root = args["<dataset_root>"]
-    assert dataset in vision.Datasets, (
-        "`{}` is not supported, use `{}`".format(dataset, vision.Datasets.keys()))
+    assert dataset in data.Datasets, (
+        "`{}` is not supported, use `{}`".format(dataset, data.Datasets.keys()))
     assert os.path.exists(dataset_root), (
         "Failed to find root dir `{}` of dataset.".format(dataset_root))
     assert os.path.exists(hparams), (
         "Failed to find hparams josn `{}`".format(hparams))
     hparams = JsonConfig(hparams)
-    dataset = vision.Datasets[dataset]
+    dataset = data.Datasets[dataset]
     # set transform of dataset
     transform = transforms.Compose([
         transforms.CenterCrop(hparams.Data.center_crop),

@@ -1,4 +1,4 @@
-from .datasets import CelebADataset
+from .celeba import CelebADataset
 
 Datasets = {
     "celeba": CelebADataset

@@ -3,7 +3,7 @@ import torch
 from collections import defaultdict
 from . import learning_rate_schedule
 from .config import JsonConfig
-from .models import Glow
+from .models import FontGlow
 from .utils import load, get_proper_device
 
 
@@ -24,15 +24,17 @@ def build(hparams, is_training):
     # criterion_dict = None
     cpu, devices = "cpu", None
     # get_loss = None
+
     # 1. build graph and criterion_dict, (on cpu)
     # build and append `device attr` to graph
-    graph = Glow(hparams)
+    graph = FontGlow(hparams)
     graph.device = hparams.Device.glow
     if graph is not None:
         # get device
         devices = get_proper_device(graph.device)
         graph.device = devices
         graph.to(cpu)
+
     # 2. get optim (on cpu)
     try:
         if graph is not None and is_training:
@@ -55,6 +57,7 @@ def build(hparams, is_training):
             }
     except KeyError:
         raise ValueError("[Builder]: Optimizer `{}` is not supported.".format(optim_name))
+
     # 3. warm start and move to devices
     if graph is not None:
         # 1. warm start from pre-trained model (on cpu)
