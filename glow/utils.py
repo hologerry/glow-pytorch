@@ -195,6 +195,9 @@ def __get_aspect(spectrogram):
 
 
 def plot_prob(done, title="", file_name=None, plot_dir=None):
+    # print("plot prob", done[0].shape)
+    # print(file_name)
+    # print(plot_dir)
     __make_dir(file_name, plot_dir)
 
     done, title = __to_ndarray_list(done, title)

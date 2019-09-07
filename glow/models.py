@@ -379,7 +379,6 @@ class FontGlow(nn.Module):
             h = self.learn_top(h)
         if self.hparams.Glow.y_condition:
             assert c is not None
-            print("priorc", c.type())
             cp = self.project_c_cond(c).view(B, C, 1, 1)
             h += cp
         return thops.split_feature(h, "split")

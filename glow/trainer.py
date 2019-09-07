@@ -4,7 +4,8 @@ import datetime
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
 from torch.utils.data import DataLoader
-from .utils import save, plot_prob
+from .utils import save
+# from .utils import plot_prob
 from .config import JsonConfig
 from .models import FontGlow
 from . import thops
@@ -178,7 +179,7 @@ class Trainer(object):
 
                 # plot
                 if self.global_step % self.plot_gap == 0:
-                    img = self.graph(z=z, c=c, y=y, reverse=True)
+                    img = self.graph(z=z, c=c_onehot, y=y, reverse=True)
                     # img = torch.clamp(img, min=0, max=1.0)
                     # if self.y_condition:
                     #     if self.y_criterion == "multi-classes":
@@ -186,21 +187,22 @@ class Trainer(object):
                     #     elif self.y_criterion == "single-class":
                     #         y_pred = thops.onehot(torch.argmax(F.softmax(y_logits, dim=1), dim=1, keepdim=True),
                     #                               self.y_classes)
-                    if self.y_condition:
-                        y_pred = y_logits
-                        y_true = y
+                    # if self.y_condition:
+                    #     y_pred = y_logits
+                    #     y_true = y
                     for bi in range(min([len(img), 8])):
                         self.writer.add_image("0_reverse/{}".format(bi),
                                               torch.cat((img[bi], batch["x"][bi]), dim=1), self.global_step)
-                        if self.y_condition:
-                            self.writer.add_image("1_prob/{}".format(bi),
-                                                  plot_prob([y_pred[bi], y_true[bi]], ["pred", "true"]),
-                                                  self.global_step)
+                        # TODO fix bug
+                        # if self.y_condition:
+                        #     self.writer.add_image("1_prob/{}".format(bi),
+                        #                           plot_prob([y_pred[bi], y_true[bi]], ["pred", "true"]),
+                        #                           self.global_step)
 
                 # inference
                 if hasattr(self, "inference_gap"):
                     if self.global_step % self.inference_gap == 0:
-                        img = self.graph(z=None, c=c, y=y, eps_std=0.5, reverse=True)
+                        img = self.graph(z=None, c=c_onehot, y=y, eps_std=0.5, reverse=True)
                         # img = torch.clamp(img, min=0, max=1.0)
                         for bi in range(min([len(img), 8])):
                             self.writer.add_image("2_sample/{}".format(bi), img[bi], self.global_step)
