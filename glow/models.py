@@ -347,7 +347,7 @@ class FontGlow(nn.Module):
             C = self.flow.output_shapes[-1][1]
             self.project_ycond = modules.LinearZeros(hparams.Glow.y_classes, 2 * C)
             self.project_class = modules.LinearZeros(C, hparams.Glow.y_classes)
-            self.projeft_c_cond = modules.LinearZeros(hparams.Glow.char_classes, 2 * C)
+            self.project_c_cond = modules.LinearZeros(hparams.Glow.char_classes, 2 * C)
             self.project_c_class = modules.LinearZeros(C, hparams.Glow.char_classes)
         # register prior hidden
         num_device = len(utils.get_proper_device(hparams.Device.glow, False))
@@ -372,8 +372,17 @@ class FontGlow(nn.Module):
         return thops.split_feature(h, "split")
 
     def prior_c(self, c=None):
-        # TODO
-        pass
+        B, C = self.prior_h.size(0), self.prior_h.size(1)
+        h = self.prior_h.detach().clone()
+        assert torch.sum(h) == 0.0
+        if self.hparams.Glow.learn_top:
+            h = self.learn_top(h)
+        if self.hparams.Glow.y_condition:
+            assert c is not None
+            print("priorc", c.type())
+            cp = self.project_c_cond(c).view(B, C, 1, 1)
+            h += cp
+        return thops.split_feature(h, "split")
 
     def forward(self, x=None, c=None, y=None, z=None,
                 eps_std=None, reverse=False):
@@ -391,6 +400,8 @@ class FontGlow(nn.Module):
         # encode
         z, objective = self.flow(z, logdet=logdet, reverse=False)
         # prior
+        mean_c, logs_c = self.prior_c(c)
+        objective += modules.GaussianDiag.logp(mean_c, logs_c, z)
         mean, logs = self.prior(y)
         objective += modules.GaussianDiag.logp(mean, logs, z)
 

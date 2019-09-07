@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from .utils import save, plot_prob
 from .config import JsonConfig
 from .models import FontGlow
-# from . import thops
+from . import thops
 
 
 class Trainer(object):
@@ -67,8 +67,8 @@ class Trainer(object):
         self.y_classes = hparams.Glow.y_classes
         self.y_condition = hparams.Glow.y_condition
         self.y_criterion = hparams.Criterion.y_condition
-        self.char_classes = hparams.Clow.char_classes
-        self.char_criterion = hparams.Criterion.char_criterion
+        self.char_classes = hparams.Glow.char_classes
+        self.char_criterion = hparams.Criterion.char_condition
         assert self.y_criterion in ["l1", "multi-classes", "single-class"]
         assert self.char_criterion in ["single-class"]
 
@@ -101,6 +101,7 @@ class Trainer(object):
                     batch[k] = batch[k].to(self.data_device)
                 x = batch["x"]
                 c = None
+                c_onehot = None
                 y = None
 
                 """ celeba
@@ -115,23 +116,24 @@ class Trainer(object):
                 """
                 # explo
                 if self.y_condition:
-                    assert self.y_condition == "l1", "Explo font dataset only support l1 loss for attributes"
+                    assert self.y_criterion == "l1", "Explo font dataset only support l1 loss for attributes"
                     assert "c" in batch
                     assert "y" in batch
                     c = batch["c"]
+                    c_onehot = thops.onehot(c, num_classes=self.char_classes)
                     y = batch["y"]
 
                 # at first time, initialize ActNorm
                 if self.global_step == 0:
                     self.graph(x[:self.batch_size // len(self.devices), ...],
-                               c[:self.batch_size // len(self.devices), ...],
+                               c_onehot[:self.batch_size // len(self.devices), ...],
                                y[:self.batch_size // len(self.devices), ...] if y is not None else None)
                 # parallel
                 if len(self.devices) > 1 and not hasattr(self.graph, "module"):
                     print("[Parallel] move to {}".format(self.devices))
                     self.graph = torch.nn.parallel.DataParallel(self.graph, self.devices, self.devices[0])
                 # forward phase
-                z, nll, c_logits, y_logits = self.graph(x=x, c=c, y=y)
+                z, nll, c_logits, y_logits = self.graph(x=x, c=c_onehot, y=y)
 
                 # loss
                 loss_generative = FontGlow.loss_generative(nll)
